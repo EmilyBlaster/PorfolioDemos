@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Works Council vs Trade Union Comparison</title>
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: 'DM Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+            .slider-container { position: relative; width: 100%; height: 500px; overflow: hidden; user-select: none; }
+            @media (min-width: 768px) { .slider-container { height: 650px; } }
+            @media (min-width: 1024px) { .slider-container { height: 800px; } }
+            .panel-left { position: absolute; top: 0; left: 0; height: 100%; background: hsl(39 88% 93%); overflow: hidden; transition: width 0.1s ease-out; }
+            .panel-left .content { height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 0 1rem; }
+            @media (min-width: 640px) { .panel-left .content { padding: 0 1.5rem; } }
+            @media (min-width: 768px) { .panel-left .content { padding: 0 2.5rem; } }
+            @media (min-width: 1024px) { .panel-left .content { padding: 0 3.5rem; } }
+            .panel-left h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem; font-weight: 700; color: hsl(243 42% 22%); margin-bottom: 0.5rem; }
+            @media (min-width: 640px) { .panel-left h2 { font-size: 1.5rem; } }
+            @media (min-width: 768px) { .panel-left h2 { font-size: 1.875rem; margin-bottom: 0.75rem; } }
+            @media (min-width: 1024px) { .panel-left h2 { font-size: 2.25rem; } }
+            .panel-left .subtitle { color: hsl(243 42% 22% / 0.9); font-size: 0.875rem; margin-bottom: 1rem; max-width: 28rem; display: none; }
+            @media (min-width: 640px) { .panel-left .subtitle { display: block; } }
+            @media (min-width: 768px) { .panel-left .subtitle { font-size: 1rem; margin-bottom: 1.5rem; } }
+            .panel-right { position: absolute; top: 0; right: 0; height: 100%; background: hsl(243 42% 22%); overflow: hidden; transition: width 0.1s ease-out; }
+            .panel-right .content { height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 0 1rem; margin-left: auto; }
+            @media (min-width: 640px) { .panel-right .content { padding: 0 1.5rem; } }
+            @media (min-width: 768px) { .panel-right .content { padding: 0 2.5rem; } }
+            @media (min-width: 1024px) { .panel-right .content { padding: 0 3.5rem; } }
+            .panel-right h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem; font-weight: 700; color: hsl(267 67% 95%); margin-bottom: 0.5rem; text-align: right; }
+            @media (min-width: 640px) { .panel-right h2 { font-size: 1.5rem; } }
+            @media (min-width: 768px) { .panel-right h2 { font-size: 1.875rem; margin-bottom: 0.75rem; } }
+            @media (min-width: 1024px) { .panel-right h2 { font-size: 2.25rem; } }
+            .panel-right .subtitle { color: hsl(267 67% 95% / 0.7); font-size: 0.875rem; margin-bottom: 1rem; max-width: 28rem; text-align: right; margin-left: auto; display: none; }
+            @media (min-width: 640px) { .panel-right .subtitle { display: block; } }
+            @media (min-width: 768px) { .panel-right .subtitle { font-size: 1rem; margin-bottom: 1.5rem; } }
+            .features { display: flex; flex-direction: column; gap: 0.5rem; }
+            @media (min-width: 768px) { .features { gap: 0.75rem; } }
+            .feature-item { display: flex; align-items: flex-start; gap: 0.5rem; opacity: 0; animation: slideInLeft 0.5s ease-out forwards; }
+            @media (min-width: 768px) { .feature-item { gap: 0.75rem; } }
+            .feature-item:nth-child(1) { animation-delay: 0ms; }
+            .feature-item:nth-child(2) { animation-delay: 100ms; }
+            .feature-item:nth-child(3) { animation-delay: 200ms; }
+            .feature-item:nth-child(4) { animation-delay: 300ms; }
+            .panel-right .feature-item { flex-direction: row-reverse; animation-name: slideInRight; }
+            .icon-container { display: flex; align-items: center; justify-content: center; border-radius: 1rem; padding: 0.5rem; flex-shrink: 0; }
+            @media (min-width: 768px) { .icon-container { padding: 0.75rem; } }
+            .icon-container svg { width: 1.25rem; height: 1.25rem; }
+            @media (min-width: 768px) { .icon-container svg { width: 1.5rem; height: 1.5rem; } }
+            @media (min-width: 1024px) { .icon-container svg { width: 1.75rem; height: 1.75rem; } }
+            .panel-left .icon-container { background: hsl(251 46% 49% / 0.2); color: hsl(251 46% 49%); }
+            .panel-right .icon-container { background: hsl(33 97% 57% / 0.2); color: hsl(33 97% 57%); }
+            .feature-text { transition: opacity 0.3s; }
+            .panel-right .feature-text { text-align: right; }
+            .feature-text h3 { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.125rem; }
+            @media (min-width: 768px) { .feature-text h3 { font-size: 1rem; } }
+            .panel-left .feature-text h3 { color: hsl(243 42% 22%); }
+            .panel-right .feature-text h3 { color: hsl(267 67% 95%); }
+            .feature-text p { font-size: 0.75rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+            @media (min-width: 768px) { .feature-text p { font-size: 0.875rem; } }
+            @media (min-width: 1024px) { .feature-text p { -webkit-line-clamp: unset; } }
+            .panel-left .feature-text p { color: hsl(243 42% 22% / 0.9); }
+            .panel-right .feature-text p { color: hsl(267 67% 95% / 0.7); }
+            .collapsed-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Space Grotesk', sans-serif; font-size: 1.125rem; font-weight: 700; writing-mode: vertical-rl; transition: opacity 0.3s; }
+            @media (min-width: 768px) { .collapsed-label { font-size: 1.5rem; } }
+            .panel-left .collapsed-label { color: hsl(243 42% 22%); transform: translate(-50%, -50%) rotate(180deg); }
+            .panel-right .collapsed-label { color: hsl(267 67% 95%); }
+            .handle-area { position: absolute; top: 0; height: 100%; width: 40px; z-index: 10; cursor: ew-resize; }
+            .handle-bar { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 4px; height: 6rem; background: hsl(251 46% 49%); border-radius: 9999px; transition: all 0.2s; }
+            @media (min-width: 768px) { .handle-bar { height: 8rem; } }
+            .handle-area:hover .handle-bar { width: 6px; height: 7rem; }
+            @media (min-width: 768px) { .handle-area:hover .handle-bar { height: 10rem; } }
+            .handle-dots { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; gap: 0.375rem; }
+            @media (min-width: 768px) { .handle-dots { gap: 0.5rem; } }
+            .handle-dot { width: 0.625rem; height: 0.625rem; border-radius: 50%; background: rgba(255, 255, 255, 0.9); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); }
+            @media (min-width: 768px) { .handle-dot { width: 0.75rem; height: 0.75rem; } }
+            .hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 0.5rem; pointer-events: none; transition: opacity 0.3s; }
+            @media (min-width: 768px) { .hint { gap: 1rem; } }
+            .hint-badge { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); padding: 0.375rem 0.75rem; border-radius: 9999px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); border: 1px solid hsl(267 30% 85%); }
+            @media (min-width: 768px) { .hint-badge { padding: 0.5rem 1rem; } }
+            .hint-badge span { font-size: 0.75rem; font-weight: 500; color: hsl(243 42% 22%); white-space: nowrap; }
+            @media (min-width: 768px) { .hint-badge span { font-size: 0.875rem; } }
+            .hint-arrow { color: white; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)); }
+            .hint-arrow svg { width: 1.5rem; height: 1.5rem; }
+            @media (min-width: 768px) { .hint-arrow svg { width: 2rem; height: 2rem; } }
+            .hint-arrow.left { animation: bounceLeft 1s ease-in-out infinite; }
+            .hint-arrow.right { animation: bounceRight 1s ease-in-out infinite; }
+            .header { position: absolute; top: 0.75rem; left: 50%; transform: translateX(-50%); z-index: 20; }
+            @media (min-width: 768px) { .header { top: 1.5rem; } }
+            .header-badge { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); padding: 0.5rem 1rem; border-radius: 9999px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); border: 1px solid hsl(267 30% 85%); }
+            @media (min-width: 768px) { .header-badge { padding: 0.75rem 1.5rem; } }
+            .header-badge h1 { font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem; font-weight: 600; color: hsl(243 42% 22%); }
+            @media (min-width: 768px) { .header-badge h1 { font-size: 0.875rem; } }
+            @media (min-width: 1024px) { .header-badge h1 { font-size: 1rem; } }
+            @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+            @keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+            @keyframes bounceLeft { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-8px); } }
+            @keyframes bounceRight { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(8px); } }
+            .dragging .handle-bar { box-shadow: 0 0 20px hsl(267 67% 82% / 0.4), 0 0 40px hsl(267 67% 82% / 0.2); animation: pulseGlow 2s ease-in-out infinite; }
+            @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 20px hsl(267 67% 82% / 0.4), 0 0 40px hsl(267 67% 82% / 0.2); } 50% { box-shadow: 0 0 30px hsl(267 67% 82% / 0.6), 0 0 60px hsl(267 67% 82% / 0.3); } }
+        </style>
+    </head>
+    <body>
+        <div class="slider-container" id="slider">
+            <div class="panel-left" id="panelLeft">
+                <div class="content" id="leftContent">
+                    <h2>Works Councils</h2>
+                    <p class="subtitle">Your voice within the company. Employee-elected representatives ensuring fair workplace practices.</p>
+                    <div class="features">
+                        <div class="feature-item">
+                            <div class="icon-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"></polyline><polyline points="9 5 12 2 15 5"></polyline><polyline points="15 19 12 22 9 19"></polyline><polyline points="19 9 22 12 19 15"></polyline><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line></svg></div>
+                            <div class="feature-text" id="leftText1"><h3>Scope</h3><p>Works Councils operate at the company level, representing team members within a specific organization.</p></div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="icon-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"></path></svg></div>
+                            <div class="feature-text" id="leftText2"><h3>Powers</h3><p>Works Councils do not have the authority to organize strikes or industrial actions.</p></div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="icon-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg></div>
+                            <div class="feature-text" id="leftText3"><h3>Legal Requirement</h3><p>In some countries, forming a Works Council is a legal requirement once a company reaches a certain size.</p></div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="icon-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+                            <div class="feature-text" id="leftText4"><h3>Role in Decision-Making</h3><p>Works Councils provide input and consultation on workplace decisions, such as working conditions and organizational changes.</p></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="collapsed-label" id="leftLabel">Works Councils</div>
+            </div>
+            <div class="panel-right" id="panelRight">
+                <div class="content" id="rightContent">
+                    <h2>Trade Unions</h2>
+                    <p class="subtitle">Collective strength across industries. Organized workers fighting for better conditions together.</p>
+                    <div class="features">
+                        <div class="feature-item">
+                            <div class="icon-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"></polyline><polyline points="9 5 12 2 15 5"></polyline><polyline points="15 19 12 22 9 19"></polyline><polyline points="19 9 22 12 19 15"></polyline><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line></svg></div>
+                            <div class="feature-text" id="rightText1"><h3>Scope</h3><p>Trade unions represent workers across an entire industry or sector, often spanning multiple companies.</p></div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="icon-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"></path></svg></div>
+                            <div class="feature-text" id="rightText2"><h3>Powers</h3><p>Trade unions can call for strikes and negotiate collective bargaining agreements on behalf of their members.</p></div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="icon-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg></div>
+                            <div class="feature-text" id="rightText3"><h3>Legal Requirement</h3><p>Trade union membership and formation are generally voluntary and not mandated by law.</p></div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="icon-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+                            <div class="feature-text" id="rightText4"><h3>Role in Decision-Making</h3><p>Trade unions focus on negotiating wages, benefits, and employment terms for their members.</p></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="collapsed-label" id="rightLabel">Trade Unions</div>
+            </div>
+            <div class="handle-area" id="handle">
+                <div class="handle-bar">
+                    <div class="handle-dots"><div class="handle-dot"></div><div class="handle-dot"></div><div class="handle-dot"></div></div>
+                </div>
+                <div class="hint" id="hint">
+                    <div class="hint-arrow left"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></div>
+                    <div class="hint-badge"><span>Drag to explore</span></div>
+                    <div class="hint-arrow right"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+                </div>
+            </div>
+            <div class="header"><div class="header-badge"><h1>Employee Representation: A Comparison</h1></div></div>
+        </div>
+        <script>
+            const slider = document.getElementById('slider');
+            const panelLeft = document.getElementById('panelLeft');
+            const panelRight = document.getElementById('panelRight');
+            const handle = document.getElementById('handle');
+            const hint = document.getElementById('hint');
+            const leftContent = document.getElementById('leftContent');
+            const rightContent = document.getElementById('rightContent');
+            const leftLabel = document.getElementById('leftLabel');
+            const rightLabel = document.getElementById('rightLabel');
+            let splitPosition = 50;
+            let isDragging = false;
+            let showHint = true;
+            function updateSlider() {
+              panelLeft.style.width = splitPosition + '%';
+              panelRight.style.width = (100 - splitPosition) + '%';
+              handle.style.left = 'calc(' + splitPosition + '% - 20px)';
+              const leftContentOpacity = Math.max(0, Math.min(1, (splitPosition - 35) / 30));
+              const rightContentOpacity = Math.max(0, Math.min(1, (65 - splitPosition) / 30));
+              leftContent.style.opacity = leftContentOpacity;
+              rightContent.style.opacity = rightContentOpacity;
+              leftLabel.style.opacity = splitPosition < 35 ? 1 : 0;
+              rightLabel.style.opacity = splitPosition > 65 ? 1 : 0;
+              const leftExpanded = splitPosition > 50;
+              const rightExpanded = splitPosition < 50;
+              document.querySelectorAll('#panelLeft .feature-text').forEach(el => { el.style.opacity = leftExpanded ? 1 : 0; });
+              document.querySelectorAll('#panelRight .feature-text').forEach(el => { el.style.opacity = rightExpanded ? 1 : 0; });
+            }
+            function onMouseDown(e) { isDragging = true; slider.classList.add('dragging'); if (showHint) { showHint = false; hint.style.opacity = 0; } e.preventDefault(); }
+            function onMouseUp() { isDragging = false; slider.classList.remove('dragging'); }
+            function onMouseMove(e) { if (!isDragging) return; const rect = slider.getBoundingClientRect(); const x = e.clientX - rect.left; const percentage = (x / rect.width) * 100; splitPosition = Math.max(20, Math.min(80, percentage)); updateSlider(); }
+            function onTouchMove(e) { if (!isDragging) return; const touch = e.touches[0]; const rect = slider.getBoundingClientRect(); const x = touch.clientX - rect.left; const percentage = (x / rect.width) * 100; splitPosition = Math.max(20, Math.min(80, percentage)); updateSlider(); }
+            handle.addEventListener('mousedown', onMouseDown);
+            handle.addEventListener('touchstart', onMouseDown);
+            window.addEventListener('mouseup', onMouseUp);
+            window.addEventListener('touchend', onMouseUp);
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('touchmove', onTouchMove);
+            updateSlider();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Sort the Actions — Good Faith Collaboration</title>
+        <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
+        <style>
+            :root {
+                --gitlab-purple: #7759C2;
+                --gitlab-purple-light: #A989F5;
+                --gitlab-purple-dark: #5943a5;
+                --gitlab-purple-bg: #CEB3EF;
+                --gitlab-orange: #FC6D26;
+                --gitlab-orange-dark: #E24329;
+                --success-purple: #7759C2;
+                --success-purple-light: #A989F5;
+                --success-purple-bg: #ebe3f7;
+                --danger-orange: #E24329;
+                --danger-orange-light: #FC6D26;
+                --danger-orange-bg: #FDF1DD;
+                --neutral-dark: #171321;
+                --neutral-medium: #626262;
+                --neutral-light: #F0F0F0;
+                --white: #FFFFFF;
+            }
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, sans-serif; background: transparent; color: var(--neutral-dark); line-height: 1.5; overflow: hidden; }
+            .container { max-width: 1920px; margin: 0 auto; padding: 1rem 1.5rem 0.5rem 1.5rem; display: flex; flex-direction: column; }
+            .header { text-align: center; margin-bottom: 1rem; }
+            .header-label { display: none; }
+            .header-title { font-size: 1.35rem; font-weight: 700; color: var(--neutral-dark); }
+            .header-subtitle { display: none; }
+            .game-area { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+            .buckets { display: flex; gap: 2rem; width: 100%; justify-content: center; }
+            .bucket { flex: 1; max-width: 260px; min-height: 120px; border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; align-items: center; transition: all 0.25s ease; border: 3px dashed transparent; }
+            .bucket-good { background: linear-gradient(145deg, #f3eefb 0%, var(--success-purple-bg) 100%); border-color: var(--success-purple-light); }
+            .bucket-good.drag-over { border-color: var(--success-purple); transform: scale(1.03); box-shadow: 0 8px 30px rgba(119, 89, 194, 0.25); }
+            .bucket-bad { background: linear-gradient(145deg, #fef5ee 0%, var(--danger-orange-bg) 100%); border-color: #FCA326; }
+            .bucket-bad.drag-over { border-color: var(--danger-orange); transform: scale(1.03); box-shadow: 0 8px 30px rgba(226, 67, 41, 0.25); }
+            .bucket-icon { font-size: 1.75rem; margin-bottom: 0.35rem; }
+            .bucket-label { font-weight: 700; font-size: 1rem; margin-bottom: 0.2rem; }
+            .bucket-good .bucket-label { color: var(--success-purple); }
+            .bucket-bad .bucket-label { color: var(--danger-orange); }
+            .bucket-hint { font-size: 0.8rem; color: var(--neutral-medium); text-align: center; }
+            .bucket-count { margin-top: 0.6rem; font-size: 0.8rem; font-weight: 600; padding: 0.25rem 0.7rem; border-radius: 20px; }
+            .bucket-good .bucket-count { background: rgba(119, 89, 194, 0.15); color: var(--success-purple); }
+            .bucket-bad .bucket-count { background: rgba(226, 67, 41, 0.15); color: var(--danger-orange); }
+            .card-zone { width: 100%; display: flex; justify-content: center; align-items: center; position: relative; }
+            .card { background: var(--white); border-radius: 16px; padding: 1.5rem 2rem; box-shadow: 0 8px 32px rgba(107, 79, 187, 0.12), 0 2px 8px rgba(0,0,0,0.06); max-width: 420px; width: 100%; cursor: grab; user-select: none; position: relative; transition: transform 0.15s ease, box-shadow 0.15s ease; border: 2px solid transparent; }
+            .card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(107, 79, 187, 0.18), 0 4px 12px rgba(0,0,0,0.08); }
+            .card:active { cursor: grabbing; }
+            .card.dragging { opacity: 0.9; transform: scale(1.02) rotate(2deg); box-shadow: 0 20px 50px rgba(107, 79, 187, 0.25); }
+            .card.correct-flash { border-color: var(--success-purple); animation: correctPulse 0.5s ease; }
+            .card.incorrect-flash { border-color: var(--danger-orange); animation: incorrectShake 0.5s ease; }
+            @keyframes correctPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+            @keyframes incorrectShake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+            .card-content { font-size: 1.1rem; line-height: 1.6; color: var(--neutral-dark); text-align: center; }
+            .card-hint { margin-top: 1.25rem; display: flex; justify-content: center; gap: 2.5rem; font-size: 0.75rem; color: var(--neutral-medium); }
+            .hint-left, .hint-right { display: flex; align-items: center; gap: 0.35rem; }
+            .hint-arrow { font-size: 1rem; }
+            .swipe-buttons { display: flex; gap: 1.5rem; margin-top: 0.5rem; }
+            .swipe-btn { width: 56px; height: 56px; border-radius: 50%; border: none; cursor: pointer; font-size: 1.4rem; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; }
+            .swipe-btn-bad { background: linear-gradient(145deg, #fff 0%, #fef5ee 100%); border: 2px solid #FCA326; color: var(--danger-orange); }
+            .swipe-btn-bad:hover { background: var(--danger-orange); color: var(--white); transform: scale(1.1); box-shadow: 0 6px 20px rgba(226, 67, 41, 0.35); }
+            .swipe-btn-good { background: linear-gradient(145deg, #fff 0%, #f3eefb 100%); border: 2px solid var(--success-purple-light); color: var(--success-purple); }
+            .swipe-btn-good:hover { background: var(--success-purple); color: var(--white); transform: scale(1.1); box-shadow: 0 6px 20px rgba(119, 89, 194, 0.35); }
+            .progress-bar { width: 100%; max-width: 420px; height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; margin-top: 0.5rem; }
+            .progress-fill { height: 100%; background: linear-gradient(90deg, var(--gitlab-purple) 0%, var(--gitlab-purple-light) 100%); border-radius: 4px; transition: width 0.4s ease; }
+            .progress-text { font-size: 0.8rem; color: var(--neutral-medium); margin-top: 0.25rem; }
+            .results-panel { background: var(--white); border-radius: 16px; padding: 2rem 2.5rem; box-shadow: 0 8px 32px rgba(107, 79, 187, 0.12); text-align: center; max-width: 500px; width: 100%; margin: 0 auto; display: none; animation: fadeIn 0.4s ease; }
+            @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+            .results-panel.visible { display: block; }
+            .results-icon { width: 64px; height: 64px; margin: 0 auto 0.75rem auto; }
+            .results-icon svg { width: 100%; height: 100%; }
+            .results-title { font-size: 1.4rem; font-weight: 700; color: var(--neutral-dark); margin-bottom: 0.35rem; }
+            .results-score { font-size: 2.25rem; font-weight: 700; color: var(--gitlab-purple); margin-bottom: 0.35rem; }
+            .results-subtitle { font-size: 1rem; color: var(--neutral-medium); margin-bottom: 1.25rem; }
+            .results-breakdown { display: flex; justify-content: center; gap: 2rem; margin-bottom: 1.25rem; }
+            .breakdown-item { text-align: center; }
+            .breakdown-number { font-size: 1.65rem; font-weight: 700; }
+            .breakdown-label { font-size: 0.8rem; color: var(--neutral-medium); }
+            .breakdown-correct .breakdown-number { color: var(--success-purple); }
+            .breakdown-incorrect .breakdown-number { color: var(--danger-orange); }
+            .key-takeaway { background: var(--neutral-light); border-left: 4px solid var(--gitlab-purple); padding: 1rem 1.25rem; border-radius: 0 8px 8px 0; text-align: left; margin-bottom: 1.25rem; }
+            .takeaway-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gitlab-purple); font-weight: 700; margin-bottom: 0.3rem; }
+            .takeaway-text { font-size: 0.9rem; color: var(--neutral-dark); line-height: 1.5; }
+            .restart-btn { background: linear-gradient(135deg, var(--gitlab-purple) 0%, var(--gitlab-purple-light) 100%); color: var(--white); border: none; padding: 0.8rem 1.75rem; font-size: 0.95rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
+            .restart-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(107, 79, 187, 0.35); }
+            .hidden { display: none !important; }
+            @media (max-width: 600px) { .buckets { gap: 1rem; } .bucket { padding: 1rem; min-height: 100px; } .bucket-icon { font-size: 1.5rem; } .card { padding: 1.25rem 1.5rem; } .swipe-btn { width: 50px; height: 50px; } }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <div class="header-label">Interactive Activity</div>
+                <div class="header-title">Sort the Actions</div>
+                <div class="header-subtitle">Drag each card to the bucket that matches the behavior — is it good faith collaboration or not?</div>
+            </div>
+            <div class="game-area" id="gameArea">
+                <div class="buckets">
+                    <div class="bucket bucket-bad" id="bucketBad">
+                        <div class="bucket-icon">✗</div>
+                        <div class="bucket-label">Not Good Faith</div>
+                        <div class="bucket-hint">Undermines trust & collaboration</div>
+                        <div class="bucket-count"><span id="badCount">0</span> sorted</div>
+                    </div>
+                    <div class="bucket bucket-good" id="bucketGood">
+                        <div class="bucket-icon">✓</div>
+                        <div class="bucket-label">Good Faith</div>
+                        <div class="bucket-hint">Builds trust & partnership</div>
+                        <div class="bucket-count"><span id="goodCount">0</span> sorted</div>
+                    </div>
+                </div>
+                <div class="card-zone" id="cardZone">
+                    <div class="card" id="currentCard" draggable="true">
+                        <div class="card-content" id="cardContent"></div>
+                        <div class="card-hint">
+                            <div class="hint-left"><span class="hint-arrow">←</span> Not Good Faith</div>
+                            <div class="hint-right">Good Faith <span class="hint-arrow">→</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="swipe-buttons">
+                    <button class="swipe-btn swipe-btn-bad" onclick="sortCard(false)" title="Not Good Faith">✗</button>
+                    <button class="swipe-btn swipe-btn-good" onclick="sortCard(true)" title="Good Faith">✓</button>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+                <div class="progress-text"><span id="currentIndex">1</span> of <span id="totalCards">8</span></div>
+            </div>
+            <div class="results-panel" id="resultsPanel">
+                <div class="results-icon" id="resultsIcon">
+                    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="32" cy="32" r="30" stroke="#7759C2" stroke-width="4" fill="none"/>
+                        <path d="M20 32L28 40L44 24" stroke="#7759C2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="results-title">Activity Complete!</div>
+                <div class="results-score" id="resultsScore">0%</div>
+                <div class="results-subtitle" id="resultsSubtitle">You correctly identified the actions</div>
+                <div class="results-breakdown">
+                    <div class="breakdown-item breakdown-correct">
+                        <div class="breakdown-number" id="correctCount">0</div>
+                        <div class="breakdown-label">Correct</div>
+                    </div>
+                    <div class="breakdown-item breakdown-incorrect">
+                        <div class="breakdown-number" id="incorrectCount">0</div>
+                        <div class="breakdown-label">Incorrect</div>
+                    </div>
+                </div>
+                <div class="key-takeaway">
+                    <div class="takeaway-label">Key Takeaway</div>
+                    <div class="takeaway-text">Good faith collaboration means engaging early, sharing information openly, and treating Works Councils as partners — not hurdles. When in doubt, lean toward more communication, not less.</div>
+                </div>
+                <button class="restart-btn" onclick="restartGame()">Try Again</button>
+            </div>
+        </div>
+        <script>
+            const cards = [
+                { text: "Scheduling a meeting to discuss proposed changes before finalizing them", isGoodFaith: true },
+                { text: "Sending the Works Council a finalized decision and asking if they have questions", isGoodFaith: false },
+                { text: "Sharing relevant background information and business context during discussions", isGoodFaith: true },
+                { text: "Treating Works Council requests as interruptions to your real work", isGoodFaith: false },
+                { text: "Following up promptly when a Works Council member reaches out", isGoodFaith: true },
+                { text: "Waiting until a policy is already announced to inform the Works Council", isGoodFaith: false },
+                { text: "Genuinely considering Works Council input, even when you disagree", isGoodFaith: true },
+                { text: "Acknowledging the Works Council's perspective in your communications", isGoodFaith: true },
+                { text: "Assuming the Works Council will slow things down, so avoiding early contact", isGoodFaith: false }
+            ];
+            let shuffledCards = [];
+            let currentCardIndex = 0;
+            let correctAnswers = 0;
+            let goodFaithCount = 0;
+            let notGoodFaithCount = 0;
+            const cardElement = document.getElementById('currentCard');
+            const cardContent = document.getElementById('cardContent');
+            const bucketGood = document.getElementById('bucketGood');
+            const bucketBad = document.getElementById('bucketBad');
+            const progressFill = document.getElementById('progressFill');
+            const currentIndexEl = document.getElementById('currentIndex');
+            const totalCardsEl = document.getElementById('totalCards');
+            const goodCountEl = document.getElementById('goodCount');
+            const badCountEl = document.getElementById('badCount');
+            const gameArea = document.getElementById('gameArea');
+            const resultsPanel = document.getElementById('resultsPanel');
+            function shuffle(array) { const arr = [...array]; for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
+            function initGame() { shuffledCards = shuffle(cards); currentCardIndex = 0; correctAnswers = 0; goodFaithCount = 0; notGoodFaithCount = 0; totalCardsEl.textContent = shuffledCards.length; updateUI(); gameArea.classList.remove('hidden'); resultsPanel.classList.remove('visible'); }
+            function updateUI() { if (currentCardIndex < shuffledCards.length) { cardContent.textContent = shuffledCards[currentCardIndex].text; currentIndexEl.textContent = currentCardIndex + 1; progressFill.style.width = `${(currentCardIndex / shuffledCards.length) * 100}%`; goodCountEl.textContent = goodFaithCount; badCountEl.textContent = notGoodFaithCount; } }
+            function sortCard(isGoodFaith) { const currentCard = shuffledCards[currentCardIndex]; const isCorrect = currentCard.isGoodFaith === isGoodFaith; if (isCorrect) { correctAnswers++; cardElement.classList.add('correct-flash'); } else { cardElement.classList.add('incorrect-flash'); } if (isGoodFaith) { goodFaithCount++; } else { notGoodFaithCount++; } setTimeout(() => { cardElement.classList.remove('correct-flash', 'incorrect-flash'); currentCardIndex++; if (currentCardIndex >= shuffledCards.length) { showResults(); } else { updateUI(); } }, 450); }
+            function showResults() { gameArea.classList.add('hidden'); resultsPanel.classList.add('visible'); const percentage = Math.round((correctAnswers / shuffledCards.length) * 100); document.getElementById('resultsScore').textContent = `${percentage}%`; document.getElementById('correctCount').textContent = correctAnswers; document.getElementById('incorrectCount').textContent = shuffledCards.length - correctAnswers; const icon = document.getElementById('resultsIcon'); const subtitle = document.getElementById('resultsSubtitle'); const checkCircle = `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="30" stroke="#7759C2" stroke-width="4" fill="none"/><path d="M20 32L28 40L44 24" stroke="#7759C2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`; const starIcon = `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M32 4L39.5 24.5H61L43.5 37.5L51 58L32 44L13 58L20.5 37.5L3 24.5H24.5L32 4Z" stroke="#7759C2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`; if (percentage === 100) { icon.innerHTML = starIcon; subtitle.textContent = 'Perfect! You nailed every action.'; } else if (percentage >= 80) { icon.innerHTML = checkCircle; subtitle.textContent = 'Great job! You have a solid grasp of good faith actions.'; } else if (percentage >= 60) { icon.innerHTML = checkCircle; subtitle.textContent = 'Good effort! Review the tricky ones and try again.'; } else { icon.innerHTML = checkCircle; subtitle.textContent = 'This takes practice. Give it another shot!'; } }
+            function restartGame() { initGame(); }
+            cardElement.addEventListener('dragstart', (e) => { cardElement.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
+            cardElement.addEventListener('dragend', () => { cardElement.classList.remove('dragging'); bucketGood.classList.remove('drag-over'); bucketBad.classList.remove('drag-over'); });
+            [bucketGood, bucketBad].forEach(bucket => { bucket.addEventListener('dragover', (e) => { e.preventDefault(); bucket.classList.add('drag-over'); }); bucket.addEventListener('dragleave', () => { bucket.classList.remove('drag-over'); }); bucket.addEventListener('drop', (e) => { e.preventDefault(); bucket.classList.remove('drag-over'); const isGoodFaith = bucket === bucketGood; sortCard(isGoodFaith); }); });
+            document.addEventListener('keydown', (e) => { if (resultsPanel.classList.contains('visible')) return; if (e.key === 'ArrowLeft') { sortCard(false); } else if (e.key === 'ArrowRight') { sortCard(true); } });
+            initGame();
+        </script>
+    </body>
+</html>
