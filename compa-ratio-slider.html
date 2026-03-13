@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compa-Ratio & Range Explorer</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 15px;
+            background: transparent;
+            min-height: 100%;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: transparent;
+            padding: 15px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 1.8rem;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        .interactive-section {
+            background: rgba(248, 250, 252, 0.8);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(226, 232, 240, 0.6);
+            backdrop-filter: blur(10px);
+        }
+
+        .compa-ratio-slider {
+            margin: 15px 0;
+        }
+
+        .slider-label {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2d3748;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .ratio-slider-container {
+            position: relative;
+            margin: 20px 0;
+        }
+
+        .ratio-slider {
+            width: 100%;
+            height: 12px;
+            border-radius: 6px;
+            background: linear-gradient(to right, #FC6D26 0%, #10B1B1 25%, #7759C2 50%, #CEB3EF 75%, #FDF1DD 100%);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .ratio-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border: 3px solid #7759C2;
+            transition: transform 0.2s ease;
+        }
+
+        .ratio-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        .ratio-slider::-moz-range-thumb {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            border: 3px solid #7759C2;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .ratio-markers {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #718096;
+        }
+
+        .ratio-display {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .current-ratio {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            transition: color 0.3s ease;
+        }
+
+        .ratio-description {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            transition: color 0.3s ease;
+        }
+
+        .ratio-explanation {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .range-visualization {
+            margin: 15px 0;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(226, 232, 240, 0.6);
+            backdrop-filter: blur(10px);
+        }
+
+        .range-bar-container {
+            position: relative;
+            height: 60px;
+            margin: 20px 0;
+        }
+
+        .range-bar {
+            height: 40px;
+            background: linear-gradient(to right, #FC6D26 0%, #10B1B1 25%, #7759C2 50%, #CEB3EF 75%, #FDF1DD 100%);
+            border-radius: 20px;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .range-sections {
+            display: flex;
+            height: 100%;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .range-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #374151;
+            transition: opacity 0.3s ease;
+        }
+
+        .position-indicator {
+            position: absolute;
+            top: -10px;
+            width: 4px;
+            height: 60px;
+            background: #7759C2;
+            border-radius: 2px;
+            transform: translateX(-50%);
+            transition: left 0.3s ease;
+            box-shadow: 0 2px 8px rgba(119, 89, 194, 0.4);
+        }
+
+        .position-indicator::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 16px;
+            background: #7759C2;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(119, 89, 194, 0.4);
+        }
+
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        .range-label {
+            text-align: center;
+            flex: 1;
+            padding: 0 10px;
+        }
+
+        .range-label .percentage {
+            font-weight: 700;
+            color: #2d3748;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .range-label .description {
+            color: #718096;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .current-ratio {
+                font-size: 3rem;
+            }
+            
+            .range-labels {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <div class="interactive-section">
+            <div class="compa-ratio-slider">
+                <div class="slider-label">Explore Different Compa-Ratios</div>
+                <div class="ratio-slider-container">
+                    <input type="range" id="ratio-slider" class="ratio-slider" min="0.8" max="1.2" value="1.0" step="0.05">
+                    <div class="ratio-markers">
+                        <span>0.8</span>
+                        <span>0.9</span>
+                        <span>1.0</span>
+                        <span>1.1</span>
+                        <span>1.2</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ratio-display">
+                <div class="current-ratio" id="current-ratio">1.00</div>
+                <div class="ratio-description" id="ratio-description">Market Midpoint</div>
+                <div class="ratio-explanation" id="ratio-explanation">
+                    At the range midpoint, representing the target market benchmark. Your positioning relative to this midpoint depends on factors like experience, performance, and time in role.
+                </div>
+            </div>
+
+            <div class="range-visualization">
+                <h3 style="text-align: center; color: #2d3748; margin-bottom: 20px;">📍 Your Position in the Salary Range</h3>
+                <div class="range-bar-container">
+                    <div class="range-bar">
+                        <div class="range-sections">
+                            <div class="range-section">Entry Level</div>
+                            <div class="range-section">Developing</div>
+                            <div class="range-section">Experienced</div>
+                            <div class="range-section">Expert Level</div>
+                        </div>
+                    </div>
+                    <div class="position-indicator" id="position-indicator"></div>
+                </div>
+                <div class="range-labels">
+                    <div class="range-label">
+                        <span class="percentage">0.8</span>
+                        <div class="description">Range Minimum</div>
+                    </div>
+                    <div class="range-label">
+                        <span class="percentage">1.0</span>
+                        <div class="description">Range Midpoint</div>
+                    </div>
+                    <div class="range-label">
+                        <span class="percentage">1.2</span>
+                        <div class="description">Range Maximum</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ratioSlider = document.getElementById('ratio-slider');
+        const currentRatio = document.getElementById('current-ratio');
+        const ratioDescription = document.getElementById('ratio-description');
+        const ratioExplanation = document.getElementById('ratio-explanation');
+        const positionIndicator = document.getElementById('position-indicator');
+
+        const ratioData = {
+            0.80: {
+                description: "Range Minimum",
+                explanation: "At the range minimum. This represents the entry point for the role, often for those new to the position or still developing their skills.",
+                color: "#FC6D26",
+                bgColor: "#FDF1DD"
+            },
+            0.85: {
+                description: "Building Experience",
+                explanation: "Below the midpoint, indicating room for growth within your range. Common for those building experience and proficiency in the role.",
+                color: "#10B1B1",
+                bgColor: "#FDF1DD"
+            },
+            0.90: {
+                description: "Developing Proficiency",
+                explanation: "Approaching the midpoint, reflecting solid experience and performance in the role with continued growth potential.",
+                color: "#10B1B1",
+                bgColor: "#FDF1DD"
+            },
+            0.95: {
+                description: "Market Competitive",
+                explanation: "Near the midpoint, indicating strong competency and market-competitive positioning for the role.",
+                color: "#10B1B1",
+                bgColor: "#FDF1DD"
+            },
+            1.00: {
+                description: "Market Midpoint",
+                explanation: "At the range midpoint, representing the target market benchmark. Your positioning relative to this midpoint depends on factors like experience, performance, and time in role.",
+                color: "#7759C2",
+                bgColor: "#FDF1DD"
+            },
+            1.05: {
+                description: "Above Market Midpoint",
+                explanation: "Above the midpoint, reflecting strong performance, experience, or specialized skills that add value to the role.",
+                color: "#7759C2",
+                bgColor: "#FDF1DD"
+            },
+            1.10: {
+                description: "Strong Positioning",
+                explanation: "Well above the midpoint, indicating high performance, significant experience, or specialized expertise. This is strong competitive positioning within your market.",
+                color: "#7759C2",
+                bgColor: "#FDF1DD"
+            },
+            1.15: {
+                description: "Premium Positioning",
+                explanation: "Significantly above the midpoint, reflecting premium positioning. This may indicate exceptional performance, rare skills, or roles where the organization targets higher market percentiles.",
+                color: "#CEB3EF",
+                bgColor: "#FDF1DD"
+            },
+            1.20: {
+                description: "Range Maximum",
+                explanation: "At the range maximum, representing the highest point in the standard compensation range. This typically reflects top performance, extensive experience, or exceptional value to the organization.",
+                color: "#CEB3EF",
+                bgColor: "#FDF1DD"
+            }
+        };
+
+        function updateDisplay() {
+            const ratio = parseFloat(ratioSlider.value);
+            const roundedRatio = Math.round(ratio * 20) / 20;
+            
+            let closestRatio = 1.00;
+            let minDiff = Math.abs(ratio - 1.00);
+            
+            for (let key in ratioData) {
+                const diff = Math.abs(ratio - parseFloat(key));
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestRatio = parseFloat(key);
+                }
+            }
+            
+            const data = ratioData[closestRatio];
+            
+            currentRatio.textContent = ratio.toFixed(2);
+            ratioDescription.textContent = data.description;
+            ratioExplanation.textContent = data.explanation;
+            
+            currentRatio.style.color = data.color;
+            ratioDescription.style.color = data.color;
+            ratioExplanation.style.backgroundColor = data.bgColor;
+            ratioExplanation.style.border = `2px solid ${data.color}20`;
+            
+            const position = ((ratio - 0.8) / (1.2 - 0.8)) * 100;
+            positionIndicator.style.left = position + '%';
+            positionIndicator.style.background = data.color;
+            
+            positionIndicator.style.setProperty('--indicator-color', data.color);
+        }
+
+        const style = document.createElement('style');
+        style.textContent = `
+            .position-indicator::before {
+                background: var(--indicator-color, #667eea) !important;
+            }
+        `;
+        document.head.appendChild(style);
+
+        ratioSlider.addEventListener('input', updateDisplay);
+        
+        updateDisplay();
+    </script>
+</body>
+</html>
