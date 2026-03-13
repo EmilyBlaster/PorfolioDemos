@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Job Architecture Conversation Practice</title>
+  <style>
+    .rise-quiz {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      color: #111827;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px;
+      max-width: 1100px;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+    .rise-quiz * { box-sizing: border-box; }
+    .rq-color-purple { color: #6d28d9; }
+    .rq-bg-purple { background-color: #6d28d9; color: #ffffff; }
+    .rq-color-teal { color: #0d9488; }
+    .rq-border-teal { border-color: #0d9488; }
+    .rq-color-orange { color: #c2410c; }
+    .rq-border-orange { border-color: #c2410c; }
+    .rq-header { text-align: center; margin-bottom: 20px; }
+    .rq-title { font-size: 22px; font-weight: 800; margin: 0 0 6px; color: #6d28d9; }
+    .rq-subtitle { color: #6b7280; margin: 0 0 10px; font-size: 14px; }
+    .rq-badges { display: inline-flex; gap: 8px; flex-wrap: wrap; }
+    .rq-badge {
+      background: #ede9fe;
+      color: #6d28d9;
+      border: 1px solid #c4b5fd;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .rq-badge.rq-score {
+      background: #ccfbf1;
+      color: #0f766e;
+      border-color: #99f6e4;
+    }
+    .rq-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+    @media (min-width: 900px) {
+      .rq-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .rq-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 14px;
+    }
+    .rq-card-title { color: #6d28d9; font-weight: 700; margin-bottom: 8px; }
+    .rq-text { color: #374151; line-height: 1.6; font-size: 14px; }
+    .rq-image-wrap {
+      position: relative;
+      height: 320px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+    }
+    .rq-image { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .rq-image-title {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.55), transparent);
+      color: #fff; padding: 12px 14px; font-weight: 700;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+      font-size: 16px;
+    }
+    .rq-section-title { font-weight: 700; margin: 12px 0; font-size: 15px; }
+    .rq-choices { display: grid; gap: 10px; }
+    .rq-choice {
+      width: 100%;
+      text-align: left;
+      padding: 12px;
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      color: #111827;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: border-color .15s, box-shadow .15s, background .15s;
+      font-size: 14px;
+    }
+    .rq-choice:hover { border-color: #c4b5fd; background: #faf5ff; box-shadow: 0 1px 0 rgba(0,0,0,0.02); }
+    .rq-feedback {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 14px;
+      margin-top: 4px;
+      background: #ffffff;
+    }
+    .rq-feedback.rq-ok { border-color: #99f6e4; background: #ecfeff; }
+    .rq-feedback.rq-bad { border-color: #fed7aa; background: #fff7ed; }
+    .rq-feedback-title { font-weight: 700; margin: 0 0 8px; font-size: 15px; }
+    .rq-feedback-title.rq-ok { color: #0d9488; }
+    .rq-feedback-title.rq-bad { color: #c2410c; }
+    .rq-better {
+      background: #faf5ff;
+      border: 1px solid #e9d5ff;
+      border-radius: 8px;
+      padding: 10px;
+      margin: 10px 0;
+    }
+    .rq-better-title { color: #6d28d9; font-weight: 700; display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+    .rq-better-text { color: #374151; font-style: italic; font-size: 13px; }
+    .rq-escalate { background: #f3f4f6; border-radius: 8px; padding: 10px; }
+    .rq-escalate h4 { margin: 0 0 4px; font-size: 13px; }
+    .rq-escalate p { margin: 0; color: #6b7280; font-size: 13px; }
+    .rq-actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    .rq-btn {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: transform .12s, opacity .12s, background .12s, border-color .12s;
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 14px;
+    }
+    .rq-btn.rq-primary { background: #6d28d9; color: #fff; }
+    .rq-btn.rq-primary:hover { transform: translateY(-1px); }
+    .rq-btn.rq-secondary { background: #fb923c; color: #fff; }
+    .rq-btn.rq-secondary:hover { transform: translateY(-1px); }
+    .rq-complete {
+      margin-top: 16px; text-align: center;
+      border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px;
+      background: linear-gradient(135deg, #faf5ff, #ecfeff);
+    }
+    .rq-complete-title { color: #6d28d9; font-weight: 800; margin: 8px 0; font-size: 18px; }
+    .rq-complete-score { color: #374151; margin: 6px 0 14px; }
+    .rq-tips { display: grid; gap: 10px; grid-template-columns: 1fr; margin-bottom: 12px; }
+    @media (min-width: 900px) { .rq-tips { grid-template-columns: repeat(3, 1fr); } }
+    .rq-tip { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px; text-align: left; }
+    .rq-tip h4 { margin: 6px 0; font-size: 14px; }
+    .rq-tip p { margin: 0; color: #6b7280; font-size: 13px; }
+    .rq-hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="rise-quiz" id="rqRoot">
+    <div class="rq-header">
+      <h1 class="rq-title">Job Architecture Conversation Practice</h1>
+      <p class="rq-subtitle">Scenario-based practice for managers</p>
+      <div class="rq-badges">
+        <span class="rq-badge" id="rqScenarioBadge">Scenario 1 of 5</span>
+        <span class="rq-badge rq-score" id="rqScoreBadge">Score: 0/0</span>
+      </div>
+    </div>
+    <div class="rq-grid" id="rqMain">
+      <div>
+        <div class="rq-image-wrap">
+          <img class="rq-image" id="rqImage" alt="Scenario image" />
+          <div class="rq-image-title" id="rqTitle"></div>
+        </div>
+      </div>
+      <div>
+        <div id="rqQuestionView">
+          <div class="rq-card">
+            <div class="rq-card-title">The Situation</div>
+            <div class="rq-text" id="rqQuestion"></div>
+          </div>
+          <div>
+            <div class="rq-section-title">💡 How would you respond?</div>
+            <div class="rq-choices" id="rqChoices"></div>
+          </div>
+        </div>
+        <div id="rqFeedbackView" class="rq-hidden"></div>
+      </div>
+    </div>
+    <div id="rqComplete" class="rq-hidden"></div>
+  </div>
+  <script>
+    const rqScenarios = [
+      {
+        id: "A",
+        title: "\"Why did my title change?\"",
+        image: "https://images.pexels.com/photos/7245797/pexels-photo-7245797.jpeg?auto=compress&cs=tinysrgb&w=1200",
+        question: "A team member approaches you, concerned about their Business Title changing. How do you respond?",
+        choices: [
+          {
+            text: "\"Don't worry about it, it's just a title and doesn't matter.\"",
+            isCorrect: false,
+            feedback: "This dismisses the team member's legitimate concern. Title changes can affect their professional brand.",
+            better:
+              "Your Business Title may have changed as part of standardizing our structure, but your role and responsibilities remain the same. We've separated how we classify jobs internally (Job Profile, which determines compensation) from your external-facing title (Business Title). If you have questions about why your specific title changed, I can connect you with our People Business Partner, but I want to assure you this doesn't affect your day-to-day work or compensation.",
+          },
+          {
+            text:
+              "\"Your Business Title may have changed to standardize our structure, but your role and responsibilities remain the same. This doesn't affect your work or compensation.\"",
+            isCorrect: true,
+            feedback:
+              "Excellent! You acknowledged the change while providing reassurance about their role and compensation.",
+            better:
+              "To further enhance this response, you could add: \"We've separated how we classify jobs internally (Job Profile) from your external-facing title (Business Title). If you have concerns about how this affects your professional brand, I'm happy to discuss with our People Business Partner.\"",
+          },
+          {
+            text: "\"I'll need to check with HR about that.\"",
+            isCorrect: false,
+            feedback:
+              "While escalation is sometimes needed, you should be able to address the basic message about title changes.",
+            better:
+              "Your Business Title may have changed as part of standardizing our structure, but your role and responsibilities remain the same. We've separated how we classify jobs internally from your external-facing title. Let me explain what hasn't changed, and if you have specific concerns, we can involve our People Business Partner.",
+          },
+        ],
+        escalation:
+          "If the team member is concerned about how the title change affects their external professional brand or career trajectory.",
+      },
+      {
+        id: "B",
+        title: "\"How can I advance my career?\"",
+        image: "https://images.pexels.com/photos/8374272/pexels-photo-8374272.jpeg?auto=compress&cs=tinysrgb&w=1200",
+        question:
+          "A team member wants to know how they can grow and advance their career. What's your response?",
+        choices: [
+          {
+            text:
+              "\"Just keep doing good work and you'll probably move up eventually.\"",
+            isCorrect: false,
+            feedback:
+              "This is too vague and doesn't empower the team member with actionable steps.",
+            better:
+              "Career advancement happens through consistent demonstration of next-level capabilities. Let's start by identifying what skills and experiences you need to develop for the next role. We can create a development plan together that includes stretch assignments, learning opportunities, and clear milestones. I'll support you by providing feedback and visibility for your growth.",
+          },
+          {
+            text:
+              "\"Career growth comes from developing new skills and taking on broader scope. Let's create a development plan and identify opportunities for you to demonstrate next-level capabilities.\"",
+            isCorrect: true,
+            feedback:
+              "Excellent! You focused on actionable development and offered to create a concrete plan together.",
+            better:
+              "You could enhance this by adding: \"I can help you identify stretch assignments that align with your career goals. We'll track your progress together, and I'll provide regular feedback to help you build the skills needed for advancement. What specific areas are you most interested in developing?\"",
+          },
+          {
+            text:
+              "\"You should talk to our People Business Partner about career advancement.\"",
+            isCorrect: false,
+            feedback:
+              "This is an unnecessary escalation. You can and should address career development directly with your team member.",
+            better:
+              "Career advancement starts with understanding where you want to grow. Let's discuss your career goals and create a development plan together. I can help you identify skills to develop, provide stretch assignments, and give you regular feedback. We can involve our People Business Partner if you need guidance on broader career paths, but I'm here to support your day-to-day development.",
+          },
+        ],
+        escalation:
+          "If they need guidance on long-term career paths across different departments or want to understand broader organizational opportunities.",
+      },
+      {
+        id: "C",
+        title: "\"My range decreased—am I paid less?\"",
+        image: "https://images.pexels.com/photos/7964522/pexels-photo-7964522.jpeg?auto=compress&cs=tinysrgb&w=1200",
+        question:
+          "A team member is worried because their compensation range looks lower than before. How do you explain this?",
+        choices: [
+          {
+            text:
+              "\"The ranges changed because we updated our system. Don't worry about it.\"",
+            isCorrect: false,
+            feedback:
+              "This doesn't address their concern or explain what actually changed.",
+            better:
+              "Your actual pay hasn't changed at all. What changed is how we calculate ranges. Previously, we started with San Francisco data and applied location factors. Now we use actual market data from your country in local currency. A reduction in the range isn't a reduction in your compensation—it means we're using more accurate local market data. You're still paid competitively.",
+          },
+          {
+            text:
+              "\"Your actual pay hasn't changed at all—the compensation range changed, but not what you're paid. We now use actual local market data instead of San Francisco-based calculations, which is more accurate for your location.\"",
+            isCorrect: true,
+            feedback:
+              "Excellent! You made it crystal clear that the range changed but their pay didn't, and explained the methodology shift.",
+            better:
+              "You could add: \"You remain eligible for increases based on performance. The new approach simply means we're using data that better reflects your local market, which ensures fair, competitive compensation.\"",
+          },
+          {
+            text:
+              "\"Let me connect you with Total Rewards to explain the compensation methodology.\"",
+            isCorrect: false,
+            feedback:
+              "You can address this basic concern yourself without immediate escalation.",
+            better:
+              "Your actual pay hasn't changed at all. What changed is how we calculate ranges—we now use actual market data from your country instead of San Francisco-based calculations. This is more accurate for your location. You're still paid competitively and eligible for increases based on performance. If you want deeper detail on the methodology, I can connect you with Total Rewards.",
+          },
+        ],
+        escalation:
+          "If they're concerned this limits their earning potential or want to understand the specific market data used.",
+      },
+      {
+        id: "D",
+        title: "\"Why is my compa-ratio unusual?\"",
+        image: "https://images.pexels.com/photos/5244025/pexels-photo-5244025.jpeg?auto=compress&cs=tinysrgb&w=1200",
+        question:
+          "A team member asks why their compa-ratio is above 1.20. What's your response?",
+        choices: [
+          {
+            text:
+              "\"That means you're overpaid and won't get raises anymore.\"",
+            isCorrect: false,
+            feedback:
+              "This is inaccurate and alarming. High compa-ratio doesn't mean no future increases.",
+            better:
+              "Being above 1.20 means you're paid very competitively relative to the market, which is positive positioning. Your compensation won't be reduced, and I can still propose increases for strong performance. Future increases might come as base salary adjustments or lump sum payments depending on various factors, but your performance continues to be rewarded regardless of compa-ratio.",
+          },
+          {
+            text:
+              "\"You're paid competitively relative to market. Your compensation won't be reduced, and strong performance will still be rewarded.\"",
+            isCorrect: true,
+            feedback:
+              "Excellent! You reassured them while being honest about their position.",
+            better:
+              "To be even more complete: \"Being above 1.20 means you're paid very competitively. I can still propose increases for strong performance. Future increases might come as base salary adjustments or lump sum payments depending on various factors.\"",
+          },
+          {
+            text:
+              "\"I'm not sure what that means. Let me ask our People Business Partner.\"",
+            isCorrect: false,
+            feedback:
+              "You should know the basic message about compa-ratios.",
+            better:
+              "Being above 1.20 means you're paid very competitively relative to the market, which is positive positioning. Your compensation won't be reduced, and I can still propose increases for strong performance. If you want to discuss the specific calculations, we can involve our People Business Partner.",
+          },
+        ],
+        escalation:
+          "Any questions about specific compa-ratio calculations, peer comparisons, or complex scenarios.",
+      },
+    ];
+    let rqIndex = 0;
+    let rqShowFeedback = false;
+    let rqScore = { correct: 0, total: 0 };
+    function rqRenderScenario() {
+      const s = rqScenarios[rqIndex];
+      document.getElementById("rqImage").src = s.image;
+      document.getElementById("rqTitle").textContent = s.title;
+      document.getElementById("rqQuestion").textContent = s.question;
+      document.getElementById("rqScenarioBadge").textContent =
+        `Scenario ${rqIndex + 1} of ${rqScenarios.length}`;
+      document.getElementById("rqScoreBadge").textContent =
+        `Score: ${rqScore.correct}/${rqScore.total}`;
+      const container = document.getElementById("rqChoices");
+      container.innerHTML = "";
+      s.choices.forEach((choice, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "rq-choice";
+        btn.textContent = choice.text;
+        btn.onclick = () => rqChoose(idx);
+        container.appendChild(btn);
+      });
+      document.getElementById("rqQuestionView").classList.remove("rq-hidden");
+      document.getElementById("rqFeedbackView").classList.add("rq-hidden");
+      rqShowFeedback = false;
+    }
+    function rqChoose(idx) {
+      if (rqShowFeedback) return;
+      rqShowFeedback = true;
+      const s = rqScenarios[rqIndex];
+      const choice = s.choices[idx];
+      if (choice.isCorrect) rqScore.correct++;
+      rqScore.total++;
+      document.getElementById("rqScoreBadge").textContent =
+        `Score: ${rqScore.correct}/${rqScore.total}`;
+      const ok = choice.isCorrect;
+      const fb = document.getElementById("rqFeedbackView");
+      fb.innerHTML = `
+        <div class="rq-feedback ${ok ? "rq-ok" : "rq-bad"}">
+          <div class="rq-feedback-title ${ok ? "rq-ok" : "rq-bad"}">
+            ${ok ? "✓ Great response!" : "✗ Let's improve this"}
+          </div>
+          <div class="rq-text">
+            <strong>Coach's Feedback:</strong>
+            <div style="color:#6b7280; margin-top:4px;">${choice.feedback}</div>
+          </div>
+          <div class="rq-better">
+            <div class="rq-better-title">
+              💡 Better phrasing
+            </div>
+            <div class="rq-better-text">${choice.better}</div>
+          </div>
+          <div class="rq-escalate">
+            <h4>When to escalate</h4>
+            <p>${s.escalation}</p>
+          </div>
+        </div>
+        <div class="rq-actions">
+          ${rqIndex > 0 ? `<button class="rq-btn rq-secondary" onclick="rqPrevious()">← Previous scenario</button>` : ""}
+          ${!ok ? `<button class="rq-btn rq-secondary" onclick="rqRetry()">🔄 Try again</button>` : ""}
+          ${
+            rqIndex < rqScenarios.length - 1
+              ? `<button class="rq-btn rq-primary" onclick="rqNext()">Next scenario →</button>`
+              : `<button class="rq-btn rq-primary" onclick="rqFinish()">View results</button>`
+          }
+        </div>
+      `;
+      document.getElementById("rqQuestionView").classList.add("rq-hidden");
+      fb.classList.remove("rq-hidden");
+    }
+    function rqRetry() {
+      rqShowFeedback = false;
+      rqRenderScenario();
+    }
+    function rqPrevious() {
+      rqShowFeedback = false;
+      rqIndex--;
+      if (rqIndex < 0) rqIndex = 0;
+      rqRenderScenario();
+    }
+    function rqNext() {
+      rqShowFeedback = false;
+      rqIndex++;
+      if (rqIndex >= rqScenarios.length) rqFinish();
+      else rqRenderScenario();
+    }
+    function rqReset() {
+      rqIndex = 0;
+      rqShowFeedback = false;
+      rqScore = { correct: 0, total: 0 };
+      document.getElementById("rqMain").classList.remove("rq-hidden");
+      document.getElementById("rqComplete").classList.add("rq-hidden");
+      rqRenderScenario();
+    }
+    function rqFinish() {
+      document.getElementById("rqMain").classList.add("rq-hidden");
+      const pct = rqScore.total ? Math.round((rqScore.correct / rqScore.total) * 100) : 0;
+      let feedback;
+      if (pct === 100) {
+        feedback = { icon: "🏆", title: "Outstanding Performance!", msg: "You've mastered all the key Job Architecture messages! Your team members will receive clear, consistent guidance." };
+      } else if (pct >= 80) {
+        feedback = { icon: "📈", title: "Great Work!", msg: "You have a strong grasp of the core messages. A bit more practice will make you even more confident." };
+      } else if (pct >= 60) {
+        feedback = { icon: "🎯", title: "Good Progress!", msg: "You're on the right track. Review the scenarios where you needed improvement and practice the better phrasing." };
+      } else {
+        feedback = { icon: "📚", title: "Keep Learning!", msg: "Don't worry—these conversations take practice. Review the coach feedback and try the scenarios again." };
+      }
+      const done = document.getElementById("rqComplete");
+      done.innerHTML = `
+        <div class="rq-complete">
+          <div style="font-size:36px">${feedback.icon}</div>
+          <div class="rq-complete-title">${feedback.title}</div>
+          <div class="rq-complete-score">Final Score: ${rqScore.correct} of ${rqScore.total} (${pct}%)</div>
+          <div class="rq-tips">
+            <div class="rq-tip">
+              <h4>Key Takeaway</h4>
+              <p>Focus on core messages: clarify what changed vs. what stayed the same.</p>
+            </div>
+            <div class="rq-tip">
+              <h4>Next Steps</h4>
+              <p>Review the better phrasing examples and practice with your team.</p>
+            </div>
+            <div class="rq-tip">
+              <h4>Remember</h4>
+              <p>You're not a compensation expert—escalate complex questions to your PBP.</p>
+            </div>
+          </div>
+          <button class="rq-btn rq-primary" onclick="rqReset()">🔄 Practice again</button>
+        </div>
+      `;
+      done.classList.remove("rq-hidden");
+    }
+    rqRenderScenario();
+  </script>
+</body>
+</html>
