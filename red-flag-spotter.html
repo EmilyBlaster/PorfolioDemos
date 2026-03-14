@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        />
+        <title>Red Flag Spotter - Email Activity</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            html, body {
+                overflow-x: hidden;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+
+            html::-webkit-scrollbar,
+            body::-webkit-scrollbar {
+                display: none;
+            }
+
+            body {
+                font-family: 'DM Sans', sans-serif;
+                background: transparent;
+                color: #1a1a1a;
+                padding: 40px 24px;
+                line-height: 1.6;
+            }
+
+            .container {
+                max-width: 720px;
+                margin: 0 auto;
+            }
+
+            .controls-row {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                margin-bottom: 24px;
+            }
+
+            .progress-bar {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 16px 20px;
+                background: #1e1b2e;
+                border-radius: 12px;
+                border: 1px solid rgba(255,255,255,0.1);
+            }
+
+            .progress-text {
+                font-size: 14px;
+                font-weight: 500;
+                color: #e5e5e5;
+                white-space: nowrap;
+            }
+
+            .progress-count {
+                font-family: 'IBM Plex Mono', monospace;
+                font-weight: 600;
+                color: #7c3aed;
+            }
+
+            .progress-track {
+                flex: 1;
+                height: 6px;
+                background: #3d3a4d;
+                border-radius: 3px;
+                overflow: hidden;
+            }
+
+            .progress-fill {
+                height: 100%;
+                background: linear-gradient(90deg, #7c3aed, #a78bfa);
+                border-radius: 3px;
+                width: 0%;
+                transition: width 0.4s ease;
+            }
+
+            .hint-button {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 16px 20px;
+                background: #1e1b2e;
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 12px;
+                font-family: 'DM Sans', sans-serif;
+                font-size: 14px;
+                font-weight: 500;
+                color: #e5e5e5;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                white-space: nowrap;
+            }
+
+            .hint-button:hover {
+                border-color: #7c3aed;
+                color: #a78bfa;
+            }
+
+            .hint-button.active {
+                background: #7c3aed;
+                border-color: #7c3aed;
+                color: white;
+            }
+
+            .hint-button svg {
+                width: 18px;
+                height: 18px;
+            }
+
+            .legend {
+                display: flex;
+                gap: 24px;
+                padding: 20px 24px;
+                background: #1e1b2e;
+                border-radius: 12px;
+                border: 1px solid rgba(255,255,255,0.1);
+                margin-bottom: 24px;
+            }
+
+            .legend-item {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 13px;
+                color: #e5e5e5;
+            }
+
+            .legend-icon {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                background: #ede9fe;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .legend-icon img {
+                width: 20px;
+                height: 20px;
+                object-fit: contain;
+            }
+
+            .email-container {
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+                overflow: hidden;
+                margin-bottom: 24px;
+            }
+
+            .email-header {
+                background: #1e1b2e;
+                padding: 20px 24px;
+                color: white;
+            }
+
+            .email-meta {
+                display: grid;
+                grid-template-columns: auto 1fr;
+                gap: 8px 16px;
+                font-size: 14px;
+            }
+
+            .email-meta-label {
+                color: #a78bfa;
+                font-weight: 500;
+            }
+
+            .email-meta-value {
+                color: #e5e5e5;
+            }
+
+            .email-subject {
+                margin-top: 16px;
+                padding-top: 16px;
+                border-top: 1px solid rgba(255,255,255,0.1);
+                font-size: 18px;
+                font-weight: 600;
+            }
+
+            .email-body {
+                padding: 28px;
+                font-size: 15px;
+                line-height: 1.8;
+                color: #333;
+            }
+
+            .email-body p {
+                margin-bottom: 16px;
+            }
+
+            .email-body p:last-child {
+                margin-bottom: 0;
+            }
+
+            .email-signature {
+                color: #666;
+            }
+
+            .red-flag {
+                cursor: pointer;
+                padding: 2px 4px;
+                margin: -2px -4px;
+                border-radius: 4px;
+                transition: all 0.2s ease;
+                position: relative;
+            }
+
+            .red-flag:hover {
+                background: rgba(124, 58, 237, 0.1);
+            }
+
+            .hints-active .red-flag:not(.found) {
+                background: linear-gradient(180deg, transparent 85%, #c4b5fd 85%);
+            }
+
+            .hints-active .red-flag:not(.found):hover {
+                background: linear-gradient(180deg, transparent 80%, #a78bfa 80%);
+            }
+
+            .red-flag.found {
+                background: linear-gradient(180deg, transparent 85%, #c4b5fd 85%);
+                opacity: 0.6;
+            }
+
+            .feedback-panel {
+                background: white;
+                border-radius: 16px;
+                border: 1px solid rgba(0,0,0,0.06);
+                overflow: hidden;
+                margin-bottom: 16px;
+                display: none;
+            }
+
+            .feedback-panel.active {
+                display: block;
+                animation: slideIn 0.3s ease;
+            }
+
+            @keyframes slideIn {
+                from { opacity: 0; transform: translateY(-10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            .feedback-header {
+                background: #1e1b2e;
+                padding: 16px 20px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .feedback-title {
+                color: white;
+                font-weight: 600;
+                font-size: 14px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .feedback-title svg {
+                width: 18px;
+                height: 18px;
+                stroke: #22c55e;
+            }
+
+            .feedback-close {
+                background: none;
+                border: none;
+                color: #999;
+                cursor: pointer;
+                padding: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 4px;
+                transition: all 0.2s;
+            }
+
+            .feedback-close:hover {
+                background: rgba(255,255,255,0.1);
+                color: white;
+            }
+
+            .feedback-content {
+                padding: 24px;
+            }
+
+            .feedback-quote {
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 14px;
+                color: #555;
+                padding: 12px 16px;
+                background: #f8f7f4;
+                border-radius: 8px;
+                margin-bottom: 20px;
+                border-left: 3px solid #7c3aed;
+            }
+
+            .feedback-risks {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .risk-item {
+                display: flex;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
+            .risk-icon {
+                width: 52px;
+                height: 52px;
+                border-radius: 50%;
+                background: #ede9fe;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+            }
+
+            .risk-icon img {
+                width: 28px;
+                height: 28px;
+                object-fit: contain;
+            }
+
+            .risk-text h4 {
+                font-size: 13px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #7c3aed;
+                margin-bottom: 4px;
+            }
+
+            .risk-text p {
+                font-size: 14px;
+                color: #444;
+                line-height: 1.6;
+            }
+
+            .completion-message {
+                background: linear-gradient(135deg, #1e1b2e 0%, #2d2640 100%);
+                border-radius: 16px;
+                padding: 32px;
+                text-align: center;
+                color: white;
+                display: none;
+            }
+
+            .completion-message.active {
+                display: block;
+                animation: slideIn 0.4s ease;
+            }
+
+            .completion-icon {
+                width: 64px;
+                height: 64px;
+                background: linear-gradient(135deg, #7c3aed, #a78bfa);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 20px;
+            }
+
+            .completion-icon svg {
+                width: 32px;
+                height: 32px;
+                stroke: white;
+            }
+
+            .completion-message h3 {
+                font-size: 22px;
+                margin-bottom: 12px;
+            }
+
+            .completion-message p {
+                color: #c4b5fd;
+                font-size: 15px;
+                max-width: 400px;
+                margin: 0 auto;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-icon">
+                        <img src="https://i.ibb.co/C3gTRhGY/Legal.png" alt="Legal" />
+                    </div>
+                    <span>Legal</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-icon">
+                        <img src="https://i.ibb.co/HpDHndPj/Relational.png" alt="Relational" />
+                    </div>
+                    <span>Relational</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-icon">
+                        <img src="https://i.ibb.co/qYtN3TL7/Operational.png" alt="Operational" />
+                    </div>
+                    <span>Operational</span>
+                </div>
+            </div>
+
+            <div class="controls-row">
+                <div class="progress-bar">
+                    <span class="progress-text">Flags found: <span class="progress-count" id="flagCount">0</span> / 5</span>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+                <button class="hint-button" id="hintButton" onclick="toggleHints()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    Show Hints
+                </button>
+            </div>
+
+            <div class="email-container" id="emailContainer">
+                <div class="email-header">
+                    <div class="email-meta">
+                        <span class="email-meta-label">From:</span>
+                        <span class="email-meta-value">Jordan Chen, Engineering Manager</span>
+                        <span class="email-meta-label">To:</span>
+                        <span class="email-meta-value">Platform Team</span>
+                    </div>
+                    <div class="email-subject">Q2 Restructuring Update</div>
+                </div>
+                <div class="email-body">
+                    <p>Hi team,</p>
+                    <p>
+                        I wanted to give you a heads up that
+                        <span class="red-flag" data-flag="1">starting Monday</span>,
+                        we'll be moving to the new pod structure we discussed at last month's all-hands.
+                        This means some of you will be reporting to new leads, and we're
+                        <span class="red-flag" data-flag="2">consolidating the Berlin and Amsterdam teams</span>
+                        under one workflow.
+                    </p>
+                    <p>
+                        I've looped in HR to update the org chart. I know the Works Council had some questions about this,
+                        but we're on a <span class="red-flag" data-flag="5">tight timeline</span> and
+                        <span class="red-flag" data-flag="3">can't wait for their full review</span>—we'll
+                        <span class="red-flag" data-flag="4">catch them up after</span> the transition settles.
+                    </p>
+                    <p>Please start moving your projects into the new Slack channels by EOD Friday. Let me know if you have questions.</p>
+                    <p class="email-signature">Thanks,<br />Jordan</p>
+                </div>
+            </div>
+
+            <div class="feedback-panel" id="feedback-1">
+                <div class="feedback-header">
+                    <span class="feedback-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        Red Flag Found!
+                    </span>
+                    <button class="feedback-close" onclick="closeFeedback(1)">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="feedback-content">
+                    <div class="feedback-quote">"Starting Monday"</div>
+                    <div class="feedback-risks">
+                        <div class="risk-item">
+                            <div class="risk-icon"><img src="https://i.ibb.co/C3gTRhGY/Legal.png" alt="Legal Risk"/></div>
+                            <div class="risk-text">
+                                <h4>Legal Risk</h4>
+                                <p>Announcing implementation before consultation is complete violates Works Council rights. Decisions made without proper consultation can be declared invalid and reversed.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feedback-panel" id="feedback-2">
+                <div class="feedback-header">
+                    <span class="feedback-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        Red Flag Found!
+                    </span>
+                    <button class="feedback-close" onclick="closeFeedback(2)">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="feedback-content">
+                    <div class="feedback-quote">"Consolidating the Berlin and Amsterdam teams"</div>
+                    <div class="feedback-risks">
+                        <div class="risk-item">
+                            <div class="risk-icon"><img src="https://i.ibb.co/C3gTRhGY/Legal.png" alt="Legal Risk"/></div>
+                            <div class="risk-text">
+                                <h4>Legal Risk</h4>
+                                <p>Changes affecting employees across multiple countries often trigger additional consultation requirements. Each country's Works Council may have separate rights that must be addressed.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feedback-panel" id="feedback-3">
+                <div class="feedback-header">
+                    <span class="feedback-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        Red Flag Found!
+                    </span>
+                    <button class="feedback-close" onclick="closeFeedback(3)">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="feedback-content">
+                    <div class="feedback-quote">"Can't wait for their full review"</div>
+                    <div class="feedback-risks">
+                        <div class="risk-item">
+                            <div class="risk-icon"><img src="https://i.ibb.co/C3gTRhGY/Legal.png" alt="Legal Risk"/></div>
+                            <div class="risk-text">
+                                <h4>Legal Risk</h4>
+                                <p>Dismissing the consultation process exposes the company to legal challenges. Works Councils have statutory rights that cannot be bypassed due to business timelines.</p>
+                            </div>
+                        </div>
+                        <div class="risk-item">
+                            <div class="risk-icon"><img src="https://i.ibb.co/HpDHndPj/Relational.png" alt="Relational Risk"/></div>
+                            <div class="risk-text">
+                                <h4>Relational Risk</h4>
+                                <p>This signals to the Works Council that their input isn't valued—damaging trust and making future collaboration more difficult.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feedback-panel" id="feedback-4">
+                <div class="feedback-header">
+                    <span class="feedback-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        Red Flag Found!
+                    </span>
+                    <button class="feedback-close" onclick="closeFeedback(4)">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="feedback-content">
+                    <div class="feedback-quote">"Catch them up after"</div>
+                    <div class="feedback-risks">
+                        <div class="risk-item">
+                            <div class="risk-icon"><img src="https://i.ibb.co/HpDHndPj/Relational.png" alt="Relational Risk"/></div>
+                            <div class="risk-text">
+                                <h4>Relational Risk</h4>
+                                <p>Retroactive notification isn't consultation. This approach breeds resentment and often results in the Works Council pushing back harder on future initiatives.</p>
+                            </div>
+                        </div>
+                        <div class="risk-item">
+                            <div class="risk-icon"><img src="https://i.ibb.co/qYtN3TL7/Operational.png" alt="Operational Risk"/></div>
+                            <div class="risk-text">
+                                <h4>Operational Risk</h4>
+                                <p>When Works Councils feel sidelined, they're more likely to formally object or escalate—creating the exact delays this approach was trying to avoid.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feedback-panel" id="feedback-5">
+                <div class="feedback-header">
+                    <span class="feedback-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        Red Flag Found!
+                    </span>
+                    <button class="feedback-close" onclick="closeFeedback(5)">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="feedback-content">
+                    <div class="feedback-quote">"Tight timeline"</div>
+                    <div class="feedback-risks">
+                        <div class="risk-item">
+                            <div class="risk-icon"><img src="https://i.ibb.co/qYtN3TL7/Operational.png" alt="Operational Risk"/></div>
+                            <div class="risk-text">
+                                <h4>Operational Risk</h4>
+                                <p>Using deadline pressure to skip process creates the exact delays you're trying to avoid. If the Works Council escalates, this project stalls—and pulls leadership into crisis management.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="completion-message" id="completionMessage">
+                <div class="completion-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                </div>
+                <h3>All Flags Found!</h3>
+                <p>You've identified all the Works Council engagement mistakes in this email. In the next section, we'll look at how this email could be rewritten to avoid these risks.</p>
+            </div>
+        </div>
+
+        <script>
+            const foundFlags = new Set();
+            const totalFlags = 5;
+            let hintsActive = false;
+
+            document.querySelectorAll('.red-flag').forEach(flag => {
+                flag.addEventListener('click', function() {
+                    const flagId = this.dataset.flag;
+                    this.classList.add('found');
+                    foundFlags.add(flagId);
+                    document.querySelectorAll('.feedback-panel').forEach(panel => {
+                        panel.classList.remove('active');
+                    });
+                    const feedbackPanel = document.getElementById(`feedback-${flagId}`);
+                    if (feedbackPanel) {
+                        feedbackPanel.classList.add('active');
+                        feedbackPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                    updateProgress();
+                });
+            });
+
+            function toggleHints() {
+                hintsActive = !hintsActive;
+                const emailContainer = document.getElementById('emailContainer');
+                const hintButton = document.getElementById('hintButton');
+                if (hintsActive) {
+                    emailContainer.classList.add('hints-active');
+                    hintButton.classList.add('active');
+                    hintButton.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        Hide Hints
+                    `;
+                } else {
+                    emailContainer.classList.remove('hints-active');
+                    hintButton.classList.remove('active');
+                    hintButton.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        Show Hints
+                    `;
+                }
+            }
+
+            function closeFeedback(flagId) {
+                const feedbackPanel = document.getElementById(`feedback-${flagId}`);
+                if (feedbackPanel) {
+                    feedbackPanel.classList.remove('active');
+                }
+            }
+
+            function updateProgress() {
+                const count = foundFlags.size;
+                document.getElementById('flagCount').textContent = count;
+                document.getElementById('progressFill').style.width = `${(count / totalFlags) * 100}%`;
+                if (count === totalFlags) {
+                    setTimeout(() => {
+                        document.getElementById('completionMessage').classList.add('active');
+                        document.getElementById('completionMessage').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }, 500);
+                }
+            }
+        </script>
+    </body>
+</html>
